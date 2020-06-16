@@ -1,24 +1,41 @@
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
-#user = pd.read_csv('./train/train_user.csv')
+user = pd.read_csv('./train/train_user.csv')
 #app = pd.read_csv('./train/train_app.csv')
 #sms = pd.read_csv('./train/train_sms.csv')
-#voc = pd.read_csv('./train/train_voc.csv')
+voc = pd.read_csv('./train/train_voc.csv')
 '''print(app.info())
 print(sms.info())
 '''
-'''
+
 print(user.info())
-print(user['phone_no_m'])
-user_cols = user.columns[user.dtypes == 'float64']
-user_monthuse = user[user_cols]
+months=['arpu_201908','arpu_201909','arpu_201910','arpu_201911','arpu_201912','arpu_202001','arpu_202002','arpu_202003']
+#user_cols = user.columns[user.dtypes == 'float64']
+k=0
+a=[]
+user_months=[]
+for name in tqdm(user['phone_no_m'].values):
+    for month in months:
+        if user[user['phone_no_m']==name][month].isna().values==False:
+            k=k+1
+    user_months.append(k)
+    print(k)
+    k=0
+user['user_months']=user_months
+
+user_monthuse = user[months]
 user_monthuse = user_monthuse.fillna(0)
 user_mean=[]
+
 for i in tqdm(range(user_monthuse.values.shape[0])):
-    user_mean .append(np.mean(user_monthuse.iloc[i,:]))
+    user_mean .append(np.sum(user_monthuse.iloc[i,:]))
 user['mean_arpu']=user_mean
-for i in user_cols:
+for i in range(user.values.shape[0]):
+    if user.loc[i,'mean_arpu']<=0:
+        usera=user.drop(i)
+
+for i in months:
     user.pop(str(i))
 label = user.pop('label')
 user.pop('county_name')
@@ -27,17 +44,19 @@ user['city_name']=user['city_name'].fillna('未知')
 print(user)
 user.to_csv('./train_user.csv',index=False)
 
-
 voc.pop('opposite_no_m')
 voc.pop('start_datetime')
 voc.pop('city_name')
 voc.pop('county_name')
 voc.pop('imei_m')
+usemonths=[]
 print(voc.info())
 voc.to_csv('./train_voc.csv',index=False)
+
 '''
+
 #整理用户通话频次状态和时间
-'''user=pd.read_csv('./train_user.csv')
+user=pd.read_csv('./train_user.csv')
 print(user.info())
 voc=pd.read_csv('./train_voc.csv')
 print(voc.info())
@@ -58,9 +77,10 @@ voc_in=np.array(voc_in)
 voc_other=np.array(voc_other)
 voc_time=np.array(voc_time)
 user_voc = pd.DataFrame({'phone_no_m':user_m,'call_out_times':voc_out,'cal_in_times':voc_in,'call_other_times':voc_other,'call_time':voc_time})
-user_voc.to_csv('user_voc.csv',index=False)'''
+user_voc.to_csv('user_voc.csv',index=False)
+
 #整理用户短信频次状态
-'''
+
 user=pd.read_csv('./train_user.csv')
 print(user.info())
 sms=pd.read_csv('./train/train_sms.csv')
@@ -98,9 +118,9 @@ app_time=np.array(app_time)
 app_flow=np.array(app_flow)
 user_app = pd.DataFrame({'phone_no_m':user_m,'app_time':app_time,'app_flow':app_flow})
 user_app.to_csv('user_app.csv',index=False)
-'''
 
-'''
+
+
 train_user = pd.read_csv('./train_user.csv')
 train_voc = pd.read_csv('./user_voc.csv')
 train_sms = pd.read_csv('./user_sms.csv')
